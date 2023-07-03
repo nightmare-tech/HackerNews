@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "276303135530",
+    "project_id": "hackernews-49977",
+    "storage_bucket": "hackernews-49977.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:276303135530:android:79058393583f492fb3d453",
+        "android_client_info": {
+          "package_name": "com.example.hn_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "276303135530-bc5ts71m3695qqq6eap9vupp43ql2qsm.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDFJEICxwBHmDK0UwpvSVt4-4MgzQAIhM0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "276303135530-bc5ts71m3695qqq6eap9vupp43ql2qsm.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "276303135530-gv2pgt9bjtdo26ep3q9935ofm2b5pgq3.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.hnApp.RunnerTests"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
