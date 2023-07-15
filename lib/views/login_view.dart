@@ -1,7 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:hn_app/main.dart';
+import 'verify_email_view.dart';
 import '../firebase_options.dart';
 
 class LoginView extends StatefulWidget {
@@ -31,83 +31,102 @@ class _LoginViewState extends State<LoginView> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(50),
-      child: FutureBuilder(
-        future: Firebase.initializeApp(
-          options: DefaultFirebaseOptions.currentPlatform,
-        ),
-        builder: (context, snapshot) {
-          switch (snapshot.connectionState) {
-            case ConnectionState.done:
-              return Column(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(10),
-                    child: TextField(
-                      keyboardType: TextInputType.emailAddress,
-                      autocorrect: false,
-                      enableSuggestions: false,
-                      controller: _email,
-                      decoration: const InputDecoration(hintText: 'Email'),
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Log In'),
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(50),
+        child: FutureBuilder(
+          future: Firebase.initializeApp(
+            options: DefaultFirebaseOptions.currentPlatform,
+          ),
+          builder: (context, snapshot) {
+            switch (snapshot.connectionState) {
+              case ConnectionState.done:
+                return Column(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(10),
+                      child: TextField(
+                        keyboardType: TextInputType.emailAddress,
+                        autocorrect: false,
+                        enableSuggestions: false,
+                        controller: _email,
+                        decoration: const InputDecoration(hintText: 'Email'),
+                      ),
                     ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(10.0),
-                    child: TextField(
-                      obscureText: true,
-                      autocorrect: false,
-                      enableSuggestions: false,
-                      controller: _password,
-                      decoration: const InputDecoration(hintText: 'Password'),
+                    Padding(
+                      padding: const EdgeInsets.all(10.0),
+                      child: TextField(
+                        obscureText: true,
+                        autocorrect: false,
+                        enableSuggestions: false,
+                        controller: _password,
+                        decoration: const InputDecoration(hintText: 'Password'),
+                      ),
                     ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(20.0),
-                    child: TextButton(
-                      onPressed: () async {
-                        try {
-                          final email = _email.text.trim();
-                          final password = _password.text.trim();
-                          await FirebaseAuth.instance
-                              .signInWithEmailAndPassword(
-                                  email: email, password: password);
-                          await FirebaseAuth.instance
-                              .signInWithEmailAndPassword(
-                                  email: email, password: password)
-                              .then(
-                            (value) {
-                              Navigator.of(context).pushReplacement(
-                                  MaterialPageRoute(
-                                      builder: (context) =>
-                                          const VerifyEmailView()));
-                            },
-                          );
-                        } on FirebaseAuthException catch (e) {
-                          if (e.code == 'user-not-found' ||
-                              e.code == 'wrong-password') {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                    content:
-                                        Text('Incorrect email or password!')));
-                          } else {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(
-                                    content: Text(
-                                        "There was an unexpected error. Please try again later.")));
+                    Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: TextButton(
+                        onPressed: () async {
+                          try {
+                            final email = _email.text.trim();
+                            final password = _password.text.trim();
+                            await FirebaseAuth.instance
+                                .signInWithEmailAndPassword(
+                                    email: email, password: password);
+                            await FirebaseAuth.instance
+                                .signInWithEmailAndPassword(
+                                    email: email, password: password)
+                                .then(
+                              (value) {
+                                Navigator.of(context).pushReplacement(
+                                    MaterialPageRoute(
+                                        builder: (context) =>
+                                            const VerifyEmailView()));
+                              },
+                            );
+                          } on FirebaseAuthException catch (e) {
+                            if (e.code == 'user-not-found' ||
+                                e.code == 'wrong-password') {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content: Text(
+                                          'Incorrect email or password!')));
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(
+                                      content: Text(
+                                          "There was an unexpected error. Please try again later.")));
+                            }
                           }
-                        }
-                      },
-                      child: const Text('Log in'),
+                        },
+                        child: const Text(
+                          'Log in',
+                          style: TextStyle(fontSize: 18),
+                        ),
+                      ),
                     ),
-                  ),
-                ],
-              );
-            default:
-              return const Text('Loading...');
-          }
-        },
+                    TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pushNamedAndRemoveUntil(
+                              '/register/', (route) => false);
+                        },
+                        child: const Text(
+                          "Don't have an account? Sign up",
+                          style: TextStyle(fontSize: 16),
+                        ))
+                  ],
+                );
+
+              default:
+                return const Text('Loading...');
+            }
+          },
+        ),
       ),
     );
   }

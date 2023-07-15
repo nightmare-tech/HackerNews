@@ -3,10 +3,13 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:hn_app/views/login_view.dart';
+import 'package:hn_app/views/register_view.dart';
 import 'package:hn_app/views/router_page.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 import 'firebase_options.dart';
 import 'src/article.dart';
+import './views/verify_email_view.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,6 +21,11 @@ void main() {
         useMaterial3: true,
       ),
       home: const HomePage(),
+      routes: {
+        "/login/": (context) => const LoginView(),
+        "/register/": (context) => const RegisterView(),
+        "/router": (context) => const RouterPage()
+      },
     ),
   );
 }
@@ -25,12 +33,19 @@ void main() {
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
+  Future<void> _signOut() async {
+    await FirebaseAuth.instance.signOut();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('HackerNews'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        actions: [
+          IconButton(onPressed: _signOut, icon: const Icon(Icons.logout))
+        ],
       ),
       body: FutureBuilder(
         future: Firebase.initializeApp(
@@ -50,83 +65,12 @@ class HomePage extends StatelessWidget {
               }
 
             default:
-              return const Text('Loading...');
+              return const CircularProgressIndicator();
           }
         },
       ),
     );
   }
-}
-
-class VerifyEmailView extends StatefulWidget {
-  const VerifyEmailView({super.key});
-
-  @override
-  State<VerifyEmailView> createState() => _VerifyEmailViewState();
-}
-
-class _VerifyEmailViewState extends State<VerifyEmailView> {
-  bool isEmailVerified = false;
-  Timer? timer;
-
-  @override
-  void initState() {
-    super.initState();
-    isEmailVerified = FirebaseAuth.instance.currentUser!.emailVerified;
-
-    if (!isEmailVerified) {
-      sendVerificationEmail();
-
-      timer = Timer.periodic(
-          const Duration(seconds: 3), (timer) => checkEmailVerified());
-    }
-  }
-
-  @override
-  void dispose() {
-    timer?.cancel();
-    super.dispose();
-  }
-
-  Future checkEmailVerified() async {
-    await FirebaseAuth.instance.currentUser!.reload();
-    setState(() {
-      isEmailVerified = FirebaseAuth.instance.currentUser!.emailVerified;
-    });
-    if (isEmailVerified) timer?.cancel();
-  }
-
-  Future sendVerificationEmail() async {
-    try {
-      final user = FirebaseAuth.instance.currentUser!;
-      await user.sendEmailVerification();
-    } catch (e) {
-      ScaffoldMessenger(
-        child: Text(e.toString()),
-      );
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) => isEmailVerified
-      ? const HomePage()
-      : Scaffold(
-          appBar: AppBar(
-            title: const Text('Verify email address'),
-            backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-          ),
-          body: Column(children: [
-            const Text(
-                "Please verify your email address to continue using the app...",
-                style: TextStyle(fontSize: 30)),
-            TextButton(
-                onPressed: () async {
-                  final user = FirebaseAuth.instance.currentUser;
-                  await user?.sendEmailVerification();
-                  const HomePage();
-                },
-                child: const Text('Send verification email'))
-          ]));
 }
 
 class MyHomePage extends StatefulWidget {
