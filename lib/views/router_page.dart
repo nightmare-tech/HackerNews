@@ -11,6 +11,10 @@ class _RouterPageState extends State<RouterPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(
+        title: const Text('HackerNews'),
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+      ),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(30, 100, 30, 0),
         children: [

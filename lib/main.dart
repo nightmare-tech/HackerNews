@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -24,7 +23,7 @@ void main() {
       routes: {
         "/login/": (context) => const LoginView(),
         "/register/": (context) => const RegisterView(),
-        "/router": (context) => const RouterPage()
+        "/router/": (context) => const RouterPage()
       },
     ),
   );
@@ -33,20 +32,9 @@ void main() {
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
-  Future<void> _signOut() async {
-    await FirebaseAuth.instance.signOut();
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('HackerNews'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        actions: [
-          IconButton(onPressed: _signOut, icon: const Icon(Icons.logout))
-        ],
-      ),
       body: FutureBuilder(
         future: Firebase.initializeApp(
           options: DefaultFirebaseOptions.currentPlatform,
@@ -61,7 +49,7 @@ class HomePage extends StatelessWidget {
               } else if (!user.emailVerified) {
                 return const VerifyEmailView();
               } else {
-                return const MyHomePage(title: 'HackerNews');
+                return const ArticlePage(title: 'HackerNews');
               }
 
             default:
@@ -73,15 +61,21 @@ class HomePage extends StatelessWidget {
   }
 }
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title});
+enum MenuAction { logout }
+
+class ArticlePage extends StatefulWidget {
+  const ArticlePage({super.key, required this.title});
   final String title;
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<ArticlePage> createState() => _ArticlePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _ArticlePageState extends State<ArticlePage> {
+  Future<void> _signOut() async {
+    await FirebaseAuth.instance.signOut();
+  }
+
   final List<Article> _articles = articles;
 
   @override
@@ -94,8 +88,36 @@ class _MyHomePageState extends State<MyHomePage> {
         });
         return;
       },
-      child: ListView(
-        children: _articles.map(_buildItems).toList(),
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text('HackerNews'),
+          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+          actions: [
+            PopupMenuButton(
+              onSelected: (value) async {
+                switch (value) {
+                  case MenuAction.logout:
+                    final shouldLogout = await showLogOutDialog(context);
+                    if (shouldLogout) {
+                      await FirebaseAuth.instance.signOut();
+                      Navigator.of(context)
+                          .pushNamedAndRemoveUntil('/router/', (_) => false);
+                    }
+                  default:
+                }
+              },
+              itemBuilder: (context) {
+                return const [
+                  PopupMenuItem<MenuAction>(
+                      value: MenuAction.logout, child: Text('Log out')),
+                ];
+              },
+            )
+          ],
+        ),
+        body: ListView(
+          children: _articles.map(_buildItems).toList(),
+        ),
       ),
     );
   }
@@ -129,4 +151,30 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
     );
   }
+}
+
+Future<bool> showLogOutDialog(BuildContext context) {
+  return showDialog<bool>(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: const Text('Log out'),
+        content: const Text('Are you sure?'),
+        actions: [
+          TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(true);
+              },
+              child: const Text('Log out')),
+          TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(false);
+              },
+              child: const Text('Cancel'))
+        ],
+      );
+    },
+  ).then(
+    (value) => value ?? false,
+  );
 }
