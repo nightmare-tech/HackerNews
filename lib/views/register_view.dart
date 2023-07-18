@@ -1,7 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'verify_email_view.dart';
 import '../firebase_options.dart';
 
 class RegisterView extends StatefulWidget {
@@ -85,10 +84,8 @@ class _RegisterViewState extends State<RegisterView> {
                                     email: email, password: password)
                                 .then(
                               (value) {
-                                Navigator.of(context).pushReplacement(
-                                    MaterialPageRoute(
-                                        builder: (context) =>
-                                            const VerifyEmailView()));
+                                Navigator.of(context).pushNamedAndRemoveUntil(
+                                    "/verifyEmail/", (route) => false);
                               },
                             );
                           } on FirebaseAuthException catch (e) {

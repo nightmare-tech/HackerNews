@@ -1,7 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'verify_email_view.dart';
 import '../firebase_options.dart';
 
 class LoginView extends StatefulWidget {
@@ -77,16 +76,15 @@ class _LoginViewState extends State<LoginView> {
                             final password = _password.text.trim();
                             await FirebaseAuth.instance
                                 .signInWithEmailAndPassword(
-                                    email: email, password: password);
-                            await FirebaseAuth.instance
-                                .signInWithEmailAndPassword(
-                                    email: email, password: password)
+                              email: email,
+                              password: password,
+                            )
                                 .then(
                               (value) {
-                                Navigator.of(context).pushReplacement(
-                                    MaterialPageRoute(
-                                        builder: (context) =>
-                                            const VerifyEmailView()));
+                                Navigator.of(context).pushNamedAndRemoveUntil(
+                                  "/verifyEmail/",
+                                  (route) => false,
+                                );
                               },
                             );
                           } on FirebaseAuthException catch (e) {
@@ -113,7 +111,9 @@ class _LoginViewState extends State<LoginView> {
                     TextButton(
                         onPressed: () {
                           Navigator.of(context).pushNamedAndRemoveUntil(
-                              '/register/', (route) => false);
+                            '/register/',
+                            (route) => false,
+                          );
                         },
                         child: const Text(
                           "Don't have an account? Sign up",

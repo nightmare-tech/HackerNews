@@ -23,7 +23,9 @@ void main() {
       routes: {
         "/login/": (context) => const LoginView(),
         "/register/": (context) => const RegisterView(),
-        "/router/": (context) => const RouterPage()
+        "/router/": (context) => const RouterPage(),
+        "/articles/": (context) => const ArticlePage(title: "HackerNews",),
+        "/verifyEmail/": (context) => const VerifyEmailView()
       },
     ),
   );
