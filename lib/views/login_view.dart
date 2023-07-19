@@ -1,6 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:hn_app/constants/routes.dart';
 import '../firebase_options.dart';
 
 class LoginView extends StatefulWidget {
@@ -82,7 +83,7 @@ class _LoginViewState extends State<LoginView> {
                                 .then(
                               (value) {
                                 Navigator.of(context).pushNamedAndRemoveUntil(
-                                  "/verifyEmail/",
+                                  verifyEmailRoute,
                                   (route) => false,
                                 );
                               },
@@ -111,7 +112,7 @@ class _LoginViewState extends State<LoginView> {
                     TextButton(
                         onPressed: () {
                           Navigator.of(context).pushNamedAndRemoveUntil(
-                            '/register/',
+                            registerRoute,
                             (route) => false,
                           );
                         },

@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
+import 'package:hn_app/constants/routes.dart';
 import 'package:hn_app/views/login_view.dart';
 import 'package:hn_app/views/register_view.dart';
 import 'package:hn_app/views/router_page.dart';
@@ -21,11 +22,13 @@ void main() {
       ),
       home: const HomePage(),
       routes: {
-        "/login/": (context) => const LoginView(),
-        "/register/": (context) => const RegisterView(),
-        "/router/": (context) => const RouterPage(),
-        "/articles/": (context) => const ArticlePage(title: "HackerNews",),
-        "/verifyEmail/": (context) => const VerifyEmailView()
+        loginRoute: (context) => const LoginView(),
+        registerRoute: (context) => const RegisterView(),
+        routerRoute: (context) => const RouterPage(),
+        articlesRoute: (context) => const ArticlePage(
+              title: "HackerNews",
+            ),
+        verifyEmailRoute: (context) => const VerifyEmailView()
       },
     ),
   );
@@ -74,10 +77,6 @@ class ArticlePage extends StatefulWidget {
 }
 
 class _ArticlePageState extends State<ArticlePage> {
-  Future<void> _signOut() async {
-    await FirebaseAuth.instance.signOut();
-  }
-
   final List<Article> _articles = articles;
 
   @override
@@ -103,7 +102,7 @@ class _ArticlePageState extends State<ArticlePage> {
                     if (shouldLogout) {
                       await FirebaseAuth.instance.signOut();
                       Navigator.of(context)
-                          .pushNamedAndRemoveUntil('/router/', (_) => false);
+                          .pushNamedAndRemoveUntil(routerRoute, (_) => false);
                     }
                   default:
                 }
