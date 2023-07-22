@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:hn_app/constants/routes.dart';
 
 import '../main.dart';
 
@@ -62,16 +63,44 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
             title: const Text('Verify email address'),
             backgroundColor: Theme.of(context).colorScheme.inversePrimary,
           ),
-          body: Column(children: [
-            const Text(
-                "Please verify your email address to continue using the app...",
-                style: TextStyle(fontSize: 30)),
+          body: ListView(children: [
+            const Padding(
+              padding: EdgeInsets.all(20.0),
+              child: Text(
+                  "A verification email has been sent to your email address. Please check your inbox to complete the registration process.",
+                  style: TextStyle(fontSize: 25)),
+            ),
+            const Padding(
+              padding: EdgeInsets.all(20.0),
+              child: Text(
+                  "If you don't see the email in your inbox, please check your spam or junk folder.",
+                  style: TextStyle(fontSize: 20)),
+            ),
             TextButton(
                 onPressed: () async {
                   final user = FirebaseAuth.instance.currentUser;
                   await user?.sendEmailVerification();
                   const HomePage();
                 },
-                child: const Text('Send verification email'))
+                child: const Text(
+                  'Resend',
+                  style: TextStyle(fontSize: 20),
+                )),
+            Padding(
+              padding: const EdgeInsets.all(30.0),
+              child: TextButton(
+                onPressed: () async {
+                  await FirebaseAuth.instance.signOut();
+                  Navigator.of(context).pushNamedAndRemoveUntil(
+                    registerRoute,
+                    (route) => false,
+                  );
+                },
+                child: const Text(
+                  'Restart',
+                  style: TextStyle(fontSize: 20),
+                ),
+              ),
+            )
           ]));
 }

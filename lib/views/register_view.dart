@@ -2,6 +2,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:hn_app/constants/routes.dart';
+import 'package:hn_app/utilities/show_error_dialog.dart';
 import '../firebase_options.dart';
 
 class RegisterView extends StatefulWidget {
@@ -85,16 +86,21 @@ class _RegisterViewState extends State<RegisterView> {
                                     email: email, password: password)
                                 .then(
                               (value) {
-                                Navigator.of(context).pushNamedAndRemoveUntil(
-                                    verifyEmailRoute, (route) => false);
+                                Navigator.of(context).pushNamed(
+                                  verifyEmailRoute,
+                                );
                               },
                             );
                           } on FirebaseAuthException catch (e) {
                             if (e.code == 'email-already-in-use') {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                      content:
-                                          Text('Email already registered!')));
+                              // ScaffoldMessenger.of(context).showSnackBar(
+                              //     const SnackBar(
+                              //         content:
+                              //             Text('Email already registered!')));
+                              showErrorDialog(
+                                context,
+                                'Email already registered!',
+                              );
                             } else if (e.code == 'weak-password') {
                               ScaffoldMessenger.of(context).showSnackBar(
                                   const SnackBar(
