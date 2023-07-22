@@ -3,6 +3,7 @@ import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:hn_app/constants/routes.dart';
 import '../firebase_options.dart';
+import '../utilities/show_error_dialog.dart';
 
 class LoginView extends StatefulWidget {
   const LoginView({super.key});
@@ -91,16 +92,23 @@ class _LoginViewState extends State<LoginView> {
                           } on FirebaseAuthException catch (e) {
                             if (e.code == 'user-not-found' ||
                                 e.code == 'wrong-password') {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                      content: Text(
-                                          'Incorrect email or password!')));
+                              // ScaffoldMessenger.of(context).showSnackBar(
+                              //     const SnackBar(
+                              //         content: Text(
+                              //             'Incorrect email or password!')));
+                              showErrorDialog(
+                                context,
+                                "Incorrect email or password!",
+                              );
                             } else {
                               ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                      content: Text(
-                                          "There was an unexpected error. Please try again later.")));
+                                  SnackBar(content: Text("Error: ${e.code}")));
                             }
+                          } catch (e) {
+                            await showErrorDialog(
+                              context,
+                              e.toString(),
+                            );
                           }
                         },
                         child: const Text(
@@ -132,3 +140,4 @@ class _LoginViewState extends State<LoginView> {
     );
   }
 }
+
