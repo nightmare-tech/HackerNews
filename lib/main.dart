@@ -1,14 +1,11 @@
 import 'dart:async';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:hn_app/constants/routes.dart';
+import 'package:hn_app/services/auth/auth_service.dart';
+import 'package:hn_app/views/article_page.dart';
 import 'package:hn_app/views/login_view.dart';
 import 'package:hn_app/views/register_view.dart';
 import 'package:hn_app/views/router_page.dart';
-import 'package:url_launcher/url_launcher_string.dart';
-import 'firebase_options.dart';
-import 'src/article.dart';
 import './views/verify_email_view.dart';
 
 void main() {
@@ -41,17 +38,15 @@ class HomePage extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       body: FutureBuilder(
-        future: Firebase.initializeApp(
-          options: DefaultFirebaseOptions.currentPlatform,
-        ),
+        future: AuthService.firebase().initialize(),
         builder: (context, snapshot) {
           switch (snapshot.connectionState) {
             case ConnectionState.done:
-              final user = FirebaseAuth.instance.currentUser;
+              final user = AuthService.firebase().currentUser;
 
               if (user == null) {
                 return const RouterPage();
-              } else if (!user.emailVerified) {
+              } else if (!user.isEmailVerified) {
                 return const VerifyEmailView();
               } else {
                 return const ArticlePage(title: 'HackerNews');
@@ -66,93 +61,8 @@ class HomePage extends StatelessWidget {
   }
 }
 
-enum MenuAction { logout }
 
-class ArticlePage extends StatefulWidget {
-  const ArticlePage({super.key, required this.title});
-  final String title;
 
-  @override
-  State<ArticlePage> createState() => _ArticlePageState();
-}
-
-class _ArticlePageState extends State<ArticlePage> {
-  final List<Article> _articles = articles;
-
-  @override
-  Widget build(BuildContext context) {
-    return RefreshIndicator(
-      onRefresh: () async {
-        await Future.delayed(const Duration(seconds: 1));
-        setState(() {
-          _articles.removeAt(0);
-        });
-        return;
-      },
-      child: Scaffold(
-        appBar: AppBar(
-          title: const Text('HackerNews'),
-          backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-          actions: [
-            PopupMenuButton(
-              onSelected: (value) async {
-                switch (value) {
-                  case MenuAction.logout:
-                    final shouldLogout = await showLogOutDialog(context);
-                    if (shouldLogout) {
-                      await FirebaseAuth.instance.signOut();
-                      Navigator.of(context)
-                          .pushNamedAndRemoveUntil(routerRoute, (_) => false);
-                    }
-                  default:
-                }
-              },
-              itemBuilder: (context) {
-                return const [
-                  PopupMenuItem<MenuAction>(
-                      value: MenuAction.logout, child: Text('Log out')),
-                ];
-              },
-            )
-          ],
-        ),
-        body: ListView(
-          children: _articles.map(_buildItems).toList(),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildItems(Article article) {
-    return Padding(
-      padding: const EdgeInsets.all(16),
-      child: ExpansionTile(
-        title: Text(
-          article.text,
-          style: const TextStyle(fontSize: 24),
-        ),
-        children: <Widget>[
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              Text('${article.commentsCount} comments'),
-              IconButton(
-                icon: const Icon(Icons.open_in_browser),
-                onPressed: () async {
-                  final fakeUrl = "http://${article.domain}";
-                  if (!await launchUrlString(fakeUrl)) {
-                    throw 'Could not launch $fakeUrl';
-                  }
-                },
-                color: Colors.blueGrey,
-              )
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 Future<bool> showLogOutDialog(BuildContext context) {
   return showDialog<bool>(

@@ -1,8 +1,8 @@
 import 'dart:async';
 
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:hn_app/constants/routes.dart';
+import 'package:hn_app/services/auth/auth_service.dart';
 
 import '../main.dart';
 
@@ -20,8 +20,7 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
   @override
   void initState() {
     super.initState();
-    isEmailVerified = FirebaseAuth.instance.currentUser!.emailVerified;
-
+    isEmailVerified = AuthService.firebase().currentUser!.isEmailVerified;
     if (!isEmailVerified) {
       sendVerificationEmail();
 
@@ -37,17 +36,16 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
   }
 
   Future checkEmailVerified() async {
-    await FirebaseAuth.instance.currentUser!.reload();
+    await AuthService.firebase().reloadUser();
     setState(() {
-      isEmailVerified = FirebaseAuth.instance.currentUser!.emailVerified;
+      isEmailVerified = AuthService.firebase().currentUser!.isEmailVerified;
     });
     if (isEmailVerified) timer?.cancel();
   }
 
   Future sendVerificationEmail() async {
     try {
-      final user = FirebaseAuth.instance.currentUser!;
-      await user.sendEmailVerification();
+      await AuthService.firebase().sendEmailVerification();
     } catch (e) {
       ScaffoldMessenger(
         child: Text(e.toString()),
@@ -78,8 +76,7 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
             ),
             TextButton(
                 onPressed: () async {
-                  final user = FirebaseAuth.instance.currentUser;
-                  await user?.sendEmailVerification();
+                  await AuthService.firebase().sendEmailVerification();
                   const HomePage();
                 },
                 child: const Text(
@@ -90,7 +87,7 @@ class _VerifyEmailViewState extends State<VerifyEmailView> {
               padding: const EdgeInsets.all(30.0),
               child: TextButton(
                 onPressed: () async {
-                  await FirebaseAuth.instance.signOut();
+                  await AuthService.firebase().logOut();
                   Navigator.of(context).pushNamedAndRemoveUntil(
                     registerRoute,
                     (route) => false,

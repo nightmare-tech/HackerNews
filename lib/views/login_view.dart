@@ -1,8 +1,7 @@
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:hn_app/constants/routes.dart';
-import '../firebase_options.dart';
+import 'package:hn_app/services/auth/auth_exceptions.dart';
+import 'package:hn_app/services/auth/auth_service.dart';
 import '../utilities/show_error_dialog.dart';
 
 class LoginView extends StatefulWidget {
@@ -40,9 +39,7 @@ class _LoginViewState extends State<LoginView> {
       body: Padding(
         padding: const EdgeInsets.all(50),
         child: FutureBuilder(
-          future: Firebase.initializeApp(
-            options: DefaultFirebaseOptions.currentPlatform,
-          ),
+          future: AuthService.firebase().initialize(),
           builder: (context, snapshot) {
             switch (snapshot.connectionState) {
               case ConnectionState.done:
@@ -76,8 +73,8 @@ class _LoginViewState extends State<LoginView> {
                           try {
                             final email = _email.text.trim();
                             final password = _password.text.trim();
-                            await FirebaseAuth.instance
-                                .signInWithEmailAndPassword(
+                            await AuthService.firebase()
+                                .logIn(
                               email: email,
                               password: password,
                             )
@@ -89,26 +86,15 @@ class _LoginViewState extends State<LoginView> {
                                 );
                               },
                             );
-                          } on FirebaseAuthException catch (e) {
-                            if (e.code == 'user-not-found' ||
-                                e.code == 'wrong-password') {
-                              // ScaffoldMessenger.of(context).showSnackBar(
-                              //     const SnackBar(
-                              //         content: Text(
-                              //             'Incorrect email or password!')));
-                              showErrorDialog(
-                                context,
-                                "Incorrect email or password!",
-                              );
-                            } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text("Error: ${e.code}")));
-                            }
-                          } catch (e) {
+                          } on WrongEmailOrPasswordAuthException{
                             await showErrorDialog(
                               context,
-                              e.toString(),
+                              'Incorrect email or password!',
                             );
+                          } on GenericAuthException {
+                              await showErrorDialog(
+                              context,
+                              'Authentication Error',);
                           }
                         },
                         child: const Text(
@@ -140,4 +126,3 @@ class _LoginViewState extends State<LoginView> {
     );
   }
 }
-

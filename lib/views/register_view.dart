@@ -1,9 +1,8 @@
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:hn_app/constants/routes.dart';
+import 'package:hn_app/services/auth/auth_exceptions.dart';
+import 'package:hn_app/services/auth/auth_service.dart';
 import 'package:hn_app/utilities/show_error_dialog.dart';
-import '../firebase_options.dart';
 
 class RegisterView extends StatefulWidget {
   const RegisterView({super.key});
@@ -42,9 +41,7 @@ class _RegisterViewState extends State<RegisterView> {
       body: Padding(
         padding: const EdgeInsets.all(50),
         child: FutureBuilder(
-          future: Firebase.initializeApp(
-            options: DefaultFirebaseOptions.currentPlatform,
-          ),
+          future: AuthService.firebase().initialize(),
           builder: (context, snapshot) {
             switch (snapshot.connectionState) {
               case ConnectionState.done:
@@ -78,12 +75,15 @@ class _RegisterViewState extends State<RegisterView> {
                           try {
                             final email = _email.text.trim();
                             final password = _password.text.trim();
-                            await FirebaseAuth.instance
-                                .createUserWithEmailAndPassword(
-                                    email: email, password: password);
-                            await FirebaseAuth.instance
-                                .signInWithEmailAndPassword(
-                                    email: email, password: password)
+                            await AuthService.firebase().createUser(
+                              email: email,
+                              password: password,
+                            );
+                            await AuthService.firebase()
+                                .logIn(
+                              email: email,
+                              password: password,
+                            )
                                 .then(
                               (value) {
                                 Navigator.of(context).pushNamed(
@@ -91,29 +91,24 @@ class _RegisterViewState extends State<RegisterView> {
                                 );
                               },
                             );
-                          } on FirebaseAuthException catch (e) {
-                            if (e.code == 'email-already-in-use') {
-                              // ScaffoldMessenger.of(context).showSnackBar(
-                              //     const SnackBar(
-                              //         content:
-                              //             Text('Email already registered!')));
-                              showErrorDialog(
-                                context,
-                                'Email already registered!',
-                              );
-                            } else if (e.code == 'weak-password') {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                      content: Text('Weak Password!')));
-                            } else if (e.code == 'invalid-email') {
-                              ScaffoldMessenger.of(context)
-                                  .showSnackBar(const SnackBar(
-                                content: Text('Invalid email address'),
-                              ));
-                            } else {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                  SnackBar(content: Text('Error: ${e.code}')));
-                            }
+                          } on EmailAlreadyInUseAuthException {
+                            showErrorDialog(
+                              context,
+                              'Email already registered!',
+                            );
+                          } on WeakPasswordAuthException {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    content: Text('Weak Password!')));
+                          } on InvalidEmailAuthException {
+                            ScaffoldMessenger.of(context)
+                                .showSnackBar(const SnackBar(
+                              content: Text('Invalid email address'),
+                            ));
+                          } on GenericAuthException {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                    content: Text('Authentication Error')));
                           }
                         },
                         child: const Text(
